@@ -43,7 +43,7 @@ func (d *localDB) GetUser(id string) (*api.User, error) {
 	return u, nil
 }
 
-func (d *localDB) PutDevice(pubKey, userId string) (string, error) {
+func (d *localDB) PutDevice(pubKey []byte, userId string) (string, error) {
 	id := ulid.Make().String()
 	if _, ok := d.users[userId]; !ok {
 		return "", errors.New("user does not exist")

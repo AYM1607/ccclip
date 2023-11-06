@@ -8,7 +8,7 @@ type DB interface {
 	GetUser(id string) (*api.User, error)
 
 	// Devices.
-	PutDevice(pubKey, userId string) (string, error)
+	PutDevice(pubKey []byte, userId string) (string, error)
 	GetDevice(id string) (*api.Device, error)
 	GetUserDevices(userId string) ([]*api.Device, error)
 	GetDeviceUser(deviceId string) (*api.User, error)
