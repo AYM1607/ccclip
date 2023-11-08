@@ -3,6 +3,7 @@ package server
 import (
 	"crypto/ecdh"
 	"encoding/json"
+	"reflect"
 	"time"
 
 	"github.com/AYM1607/ccclip/internal/db"
@@ -21,6 +22,11 @@ type FingerPrint struct {
 func decryptAuthenticatedPayload[T any](p AuthenticatedPayload, d db.DB, pk *ecdh.PrivateKey) (T, error) {
 	var res T
 	var zero T
+
+	_T := reflect.TypeOf(res)
+	if _T.Kind() == reflect.Pointer {
+		res = reflect.New(_T.Elem()).Interface().(T)
+	}
 
 	device, err := d.GetDevice(p.DeviceID)
 	if err != nil {

@@ -1,14 +1,11 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
-	"io"
-	"log"
-	"net/http"
+	"fmt"
 
-	"github.com/AYM1607/ccclip/internal/server"
 	"github.com/spf13/cobra"
+
+	"github.com/AYM1607/ccclip/internal/configfile"
 )
 
 var email string
@@ -28,25 +25,16 @@ var registerCmd = &cobra.Command{
 	Use:   "register",
 	Short: "Register a user with a given email and password",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		req := server.RegisterRequest{
-			Email:    email,
-			Password: password,
-		}
-		reqJson, err := json.Marshal(req)
+		err := apiclient.Register(email, password)
 		if err != nil {
-			return err
-		}
-		res, err := http.Post("http://localhost:8080/register", "application/json", bytes.NewReader(reqJson))
-		if err != nil {
-			return err
-		}
-		resBody, err := io.ReadAll(res.Body)
-		defer res.Body.Close()
-		if err != nil {
-			return err
+			return fmt.Errorf("could not register user: %w", err)
 		}
 
-		log.Println(string(resBody))
-		return nil
+		cc, err := configfile.EnsureAndGet()
+		if err != nil {
+			return err
+		}
+		cc.Email = email
+		return configfile.Write(cc)
 	},
 }

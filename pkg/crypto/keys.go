@@ -19,6 +19,11 @@ const (
 	ReceiveDirection
 )
 
+var (
+	privateKeyFileMode = os.FileMode(int(0600))
+	publicKeyFileMode  = os.FileMode(int(0644))
+)
+
 func NewPrivateKey() *ecdh.PrivateKey {
 	c := ecdh.X25519()
 	k, err := c.GenerateKey(rand.Reader)
@@ -75,21 +80,44 @@ func PublicKeyFromBytes(keyBytes []byte) *ecdh.PublicKey {
 	return key
 }
 
-func LoadPrivateKey(fp string) *ecdh.PrivateKey {
-	return PrivateKeyFromBytes(loadKey(fp))
-}
-
-func LoadPublicKey(fp string) *ecdh.PublicKey {
-	return PublicKeyFromBytes(loadKey(fp))
-}
-
-func loadKey(fn string) []byte {
-	b64Key, err := os.ReadFile(fn)
+func LoadPrivateKey(fp string) (*ecdh.PrivateKey, error) {
+	kb, err := loadKey(fp)
 	if err != nil {
-		panic(err)
+		return nil, err
+	}
+	return PrivateKeyFromBytes(kb), nil
+}
+
+func LoadPublicKey(fp string) (*ecdh.PublicKey, error) {
+	kb, err := loadKey(fp)
+	if err != nil {
+		return nil, err
+	}
+	return PublicKeyFromBytes(kb), nil
+}
+
+func SavePrivateKey(fp string, k *ecdh.PrivateKey) error {
+	return saveKey(fp, k.Bytes(), privateKeyFileMode)
+}
+
+func SavePublicKey(fp string, k *ecdh.PublicKey) error {
+	return saveKey(fp, k.Bytes(), publicKeyFileMode)
+}
+
+func loadKey(fp string) ([]byte, error) {
+	b64Key, err := os.ReadFile(fp)
+	if err != nil {
+		return nil, err
 	}
 
 	keyBytes := make([]byte, KeySize)
 	base64.StdEncoding.Decode(keyBytes, b64Key)
-	return keyBytes
+	return keyBytes, nil
+}
+
+func saveKey(fp string, key []byte, fm os.FileMode) error {
+	b64Key := make([]byte, base64.StdEncoding.EncodedLen(len(key)))
+	base64.StdEncoding.Encode(b64Key, key)
+
+	return os.WriteFile(fp, b64Key, fm)
 }

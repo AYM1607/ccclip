@@ -3,10 +3,9 @@ package main
 import (
 	"log"
 
+	"github.com/AYM1607/ccclip/internal/configfile"
 	"github.com/spf13/cobra"
 )
-
-var keyset int
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -19,9 +18,9 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.PersistentFlags().IntVarP(&keyset, "keyset", "k", 0, "which key set to use, can be 1 or 2")
+	rootCmd.PersistentFlags().StringVarP(&configfile.Path, "config-path", "c", "", "directory where to store the config file")
 
-	rootCmd.MarkPersistentFlagRequired("keyset")
+	rootCmd.MarkPersistentFlagRequired("config-path")
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

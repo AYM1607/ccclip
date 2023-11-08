@@ -33,10 +33,18 @@ type controller struct {
 func newHttpHandler() http.Handler {
 	r := mux.NewRouter()
 
+	pbk, err := crypto.LoadPublicKey(config.Default.PublicKeyPath)
+	if err != nil {
+		panic("could not load server's public key")
+	}
+	pvk, err := crypto.LoadPrivateKey(config.Default.PrivateKeyPath)
+	if err != nil {
+		panic("could not load server's private key")
+	}
 	c := &controller{
 		store:      db.NewLocalDB(),
-		publicKey:  crypto.LoadPublicKey(config.Default.PublicKeyPath),
-		privateKey: crypto.LoadPrivateKey(config.Default.PrivateKeyPath),
+		publicKey:  pbk,
+		privateKey: pvk,
 	}
 
 	// TODO: These are not restful at all, but it's the simplest for now. FIX IT!
