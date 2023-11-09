@@ -3,6 +3,7 @@ package server
 import (
 	"crypto/ecdh"
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -51,6 +52,8 @@ func newHttpHandler() http.Handler {
 	r.HandleFunc("/register", c.handleRegister).Methods("POST")
 	r.HandleFunc("/registerDevice", c.handleRegisterDevice).Methods("POST")
 	r.HandleFunc("/userDevices", c.handleGetUserDevices).Methods("POST")
+	r.HandleFunc("/setClipboard", c.handleSetClipboard).Methods("POST")
+	r.HandleFunc("/clipboard", c.handleGetClipboard).Methods("POST")
 
 	return r
 }
@@ -177,6 +180,97 @@ func (c *controller) handleGetUserDevices(w http.ResponseWriter, r *http.Request
 	}
 
 	res := GetUserDevicesResponse{Devices: devices}
+	w.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(w).Encode(res)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+type SetClipboardRequest struct {
+	FingerPrint `json:",inline"`
+	Clipboard   *api.Clipboard `json:"clipboard"`
+}
+
+func (c *controller) handleSetClipboard(w http.ResponseWriter, r *http.Request) {
+	var authReq AuthenticatedPayload
+	err := json.NewDecoder(r.Body).Decode(&authReq)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	log.Println("authReq: ", authReq)
+
+	req, err := decryptAuthenticatedPayload[*SetClipboardRequest](authReq, c.store, c.privateKey)
+	// TODO: verify the request fingerprint. Right now we're just trusting that
+	// if it decrypts successfully then we can trust it.
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	log.Println("req: ", req)
+
+	user, err := c.store.GetDeviceUser(authReq.DeviceID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = c.store.PutClipboard(user.ID, req.Clipboard)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+type GetClipboardRequest struct {
+	FingerPrint `json:",inline"`
+}
+
+type GetClipboardResponse struct {
+	Ciphertext      []byte `json:"ciphertext"`
+	SenderPublicKey []byte `json:"senderPublicKey"`
+}
+
+func (c *controller) handleGetClipboard(w http.ResponseWriter, r *http.Request) {
+	var authReq AuthenticatedPayload
+	err := json.NewDecoder(r.Body).Decode(&authReq)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	_, err = decryptAuthenticatedPayload[*GetClipboardRequest](authReq, c.store, c.privateKey)
+	// TODO: verify the request fingerprint. Right now we're just trusting that
+	// if it decrypts successfully then we can trust it.
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	user, err := c.store.GetDeviceUser(authReq.DeviceID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	clip, err := c.store.GetClipboard(user.ID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if _, ok := clip.Payloads[authReq.DeviceID]; !ok {
+		http.Error(w, "current clipboard was not produced for this device", http.StatusNotFound)
+		return
+	}
+
+	res := GetClipboardResponse{SenderPublicKey: clip.SenderPublicKey, Ciphertext: clip.Payloads[authReq.DeviceID]}
 	w.WriteHeader(http.StatusOK)
 	err = json.NewEncoder(w).Encode(res)
 	if err != nil {

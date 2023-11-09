@@ -11,7 +11,7 @@ type Device struct {
 }
 
 type Clipboard struct {
-	SenderDeviceID string
-	// Payloads maps DeviceIDs to base64 encoded data.
-	Payloads map[string]string
+	SenderPublicKey []byte
+	// Payloads maps DeviceIDs to encrypted data.
+	Payloads map[string][]byte
 }
