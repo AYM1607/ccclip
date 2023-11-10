@@ -9,6 +9,7 @@ import (
 
 // ReadPassword reads a single line of text from the terminal withouth echoing it out.
 func ReadPassword() string {
+	fmt.Println("Enter your password:")
 	raw, err := term.ReadPassword(int(os.Stdin.Fd()))
 	if err != nil {
 		panic(fmt.Sprintf("could not reat password from the terminal: %s", err.Error()))
