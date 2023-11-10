@@ -55,3 +55,11 @@ its public key wasn't available when the clipboard was created. The benefit of t
 be able to see it nor an attacker if we're compromised :)
 
 If you want your new device to have access to the current clipboard contents then just run `ccclip | ccclip` from an onboarded device.
+
+# Hosting
+
+The cli can be built by running `go build ./cmd/cli` from the root of the repo.
+
+I host a public API at `https://api.ccclip.io` using [fly.io](https://fly.io/) (thanks for the credits!). Feel free to use it.
+There's a Dockerfile for the server at cmd/server/Dockerfile though it will probably won't work for you; it's set up to use fly's LiteFS.
+It should be easy enough for you to adapt it for an sqlite db on a mounted volume and run without LiteFS. Maybe try other sqlite distros?
