@@ -78,7 +78,7 @@ func (c *Client) RegisterDevice(email, password string, devicePublicKey []byte) 
 	return &res, nil
 }
 
-func (c *Client) SetClipboard(plaintext string, deviceId string, pvk *ecdh.PrivateKey) error {
+func (c *Client) SetClipboard(plaintext []byte, deviceId string, pvk *ecdh.PrivateKey) error {
 	devices, err := c.getDevices(deviceId, pvk)
 	if err != nil {
 		return err
