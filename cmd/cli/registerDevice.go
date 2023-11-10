@@ -7,14 +7,11 @@ import (
 
 	"github.com/AYM1607/ccclip/internal/configfile"
 	"github.com/AYM1607/ccclip/pkg/crypto"
+	"github.com/AYM1607/ccclip/pkg/input"
 )
 
 func init() {
 	rootCmd.AddCommand(registerDeviceCommand)
-
-	registerDeviceCommand.Flags().StringVarP(&password, "password", "p", "", "password for your account")
-
-	registerDeviceCommand.MarkFlagRequired("password")
 }
 
 var registerDeviceCommand = &cobra.Command{
@@ -37,6 +34,7 @@ var registerDeviceCommand = &cobra.Command{
 		pvk := crypto.NewPrivateKey()
 		pbk := pvk.PublicKey()
 
+		password := input.ReadPassword()
 		res, err := apiclient.RegisterDevice(cc.Email, password, pbk.Bytes())
 		if err != nil {
 			return err
