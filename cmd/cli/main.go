@@ -13,7 +13,7 @@ func b64(i []byte) string {
 var apiclient *client.Client
 
 func init() {
-	apiclient = client.New("http://localhost:8080")
+	apiclient = client.New("https://api.ccclip.io")
 }
 
 func main() {

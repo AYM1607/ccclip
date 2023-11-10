@@ -1,0 +1,27 @@
+# fly.toml app configuration file generated for dark-paper-8180 on 2023-11-10T08:23:22Z
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = "dark-paper-8180"
+primary_region = "sea"
+
+[build]
+  dockerfile = "./cmd/server/Dockerfile"
+
+[env]
+  CCCLIP_LOAD_RAW_KEYS = "true"
+  CCCLIP_PORT = "3000"
+  CCCLIP_DATABASE_LOCATION = "/litefs/ccclip.db"
+
+[mounts]
+  source = "litefs"
+  destination = "/var/lib/litefs"
+
+[http_service]
+  internal_port = 8080
+#  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]

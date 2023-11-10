@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/AYM1607/ccclip/internal/configfile"
 	"github.com/spf13/cobra"
@@ -34,7 +35,8 @@ var getClipboardCmd = &cobra.Command{
 			return fmt.Errorf("could not set clipboard: %w", err)
 		}
 
-		fmt.Printf("Your current clipbard is %q\n", plain)
+		fmt.Printf("Your current clipbard is:")
+		fmt.Fprintf(os.Stdout, plain)
 		return nil
 	},
 }

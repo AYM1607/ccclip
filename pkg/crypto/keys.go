@@ -81,18 +81,34 @@ func PublicKeyFromBytes(keyBytes []byte) *ecdh.PublicKey {
 }
 
 func LoadPrivateKey(fp string) (*ecdh.PrivateKey, error) {
-	kb, err := loadKey(fp)
+	var kb []byte
+	var err error
+	if os.Getenv("CCCLIP_LOAD_RAW_KEYS") == "" {
+		kb, err = loadKey(fp)
+	} else {
+		kb = make([]byte, KeySize)
+		base64.StdEncoding.Decode(kb, []byte(fp))
+	}
 	if err != nil {
 		return nil, err
 	}
+
 	return PrivateKeyFromBytes(kb), nil
 }
 
 func LoadPublicKey(fp string) (*ecdh.PublicKey, error) {
-	kb, err := loadKey(fp)
+	var kb []byte
+	var err error
+	if os.Getenv("CCCLIP_LOAD_RAW_KEYS") == "" {
+		kb, err = loadKey(fp)
+	} else {
+		kb = make([]byte, KeySize)
+		base64.StdEncoding.Decode(kb, []byte(fp))
+	}
 	if err != nil {
 		return nil, err
 	}
+
 	return PublicKeyFromBytes(kb), nil
 }
 
