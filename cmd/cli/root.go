@@ -1,7 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"os"
+	"path"
 
 	"github.com/AYM1607/ccclip/internal/configfile"
 	"github.com/spf13/cobra"
@@ -18,9 +21,13 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&configfile.Path, "config-path", "c", "", "directory where to store the config file")
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		panic(fmt.Sprintf("could not locate home directory: %s", err.Error()))
+	}
+	defualtConfigPath := path.Join(homeDir, ".config", "ccclip")
 
-	rootCmd.MarkPersistentFlagRequired("config-path")
+	rootCmd.PersistentFlags().StringVar(&configfile.Path, "config-dir", defualtConfigPath, "location of the ccclip.yaml configuration file")
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
