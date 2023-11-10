@@ -2,7 +2,7 @@ package api
 
 type User struct {
 	ID           string
-	PasswordHash string
+	PasswordHash []byte
 }
 
 type Device struct {

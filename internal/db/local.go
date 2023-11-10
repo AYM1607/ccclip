@@ -27,7 +27,7 @@ func NewLocalDB() DB {
 	}
 }
 
-func (d *localDB) PutUser(id, passwordHash string) error {
+func (d *localDB) PutUser(id string, passwordHash []byte) error {
 	if _, ok := d.users[id]; ok {
 		return errors.New("user exists")
 	}

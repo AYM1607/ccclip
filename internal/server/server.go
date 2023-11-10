@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/AYM1607/ccclip/internal/config"
 	"github.com/AYM1607/ccclip/internal/db"
@@ -22,6 +23,8 @@ func New(addr string) *http.Server {
 		Handler: h,
 	}
 }
+
+const minPasswordWork = 12
 
 type controller struct {
 	store     db.DB
@@ -42,8 +45,16 @@ func newHttpHandler() http.Handler {
 	if err != nil {
 		panic("could not load server's private key")
 	}
+
+	var store db.DB
+	if config.Default.DatabaseLocation == "" {
+		store = db.NewLocalDB()
+	} else {
+		store = db.NewSQLiteDB(config.Default.DatabaseLocation)
+	}
+
 	c := &controller{
-		store:      db.NewLocalDB(),
+		store:      store,
 		publicKey:  pbk,
 		privateKey: pvk,
 	}
@@ -79,8 +90,13 @@ func (c *controller) handleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: This is obviously just for testing, use Bcrypt or similar for prod.
-	err = c.store.PutUser(req.Email, req.Password)
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(req.Password), minPasswordWork)
+	if err != nil {
+		log.Printf("could not hash password: %s", err.Error())
+		http.Error(w, "password invalid", http.StatusInternalServerError)
+	}
+
+	err = c.store.PutUser(req.Email, passwordHash)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -122,8 +138,7 @@ func (c *controller) handleRegisterDevice(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// TODO: This is obviously just for testing, use Bcrypt or similar for prod.
-	if user.PasswordHash != req.Password {
+	if err := bcrypt.CompareHashAndPassword(user.PasswordHash, []byte(req.Password)); err != nil {
 		http.Error(w, "password is not correct for the user", http.StatusUnauthorized)
 		return
 	}
@@ -201,8 +216,6 @@ func (c *controller) handleSetClipboard(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	log.Println("authReq: ", authReq)
-
 	req, err := decryptAuthenticatedPayload[*SetClipboardRequest](authReq, c.store, c.privateKey)
 	// TODO: verify the request fingerprint. Right now we're just trusting that
 	// if it decrypts successfully then we can trust it.
@@ -210,8 +223,6 @@ func (c *controller) handleSetClipboard(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	log.Println("req: ", req)
 
 	user, err := c.store.GetDeviceUser(authReq.DeviceID)
 	if err != nil {

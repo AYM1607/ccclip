@@ -4,7 +4,7 @@ import "github.com/AYM1607/ccclip/pkg/api"
 
 type DB interface {
 	// Users.
-	PutUser(id string, passwordHash string) error
+	PutUser(id string, passwordHash []byte) error
 	GetUser(id string) (*api.User, error)
 
 	// Devices.

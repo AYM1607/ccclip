@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"log"
 	"net/http"
 	"time"
 
@@ -43,13 +42,6 @@ func (c *Client) Register(email, password string) error {
 		return errors.New("got unexpected response code from server")
 	}
 
-	resBody, err := io.ReadAll(res.Body)
-	defer res.Body.Close()
-	if err != nil {
-		return err
-	}
-	log.Println(string(resBody))
-
 	return nil
 }
 
@@ -77,7 +69,6 @@ func (c *Client) RegisterDevice(email, password string, devicePublicKey []byte) 
 	if err != nil {
 		return nil, err
 	}
-	log.Println(string(hresBody))
 
 	var res server.RegisterDeviceResponse
 	err = json.Unmarshal(hresBody, &res)
@@ -122,12 +113,6 @@ func (c *Client) SetClipboard(plaintext string, deviceId string, pvk *ecdh.Priva
 	if err != nil {
 		return err
 	}
-	hresBody, err := io.ReadAll(hres.Body)
-	defer hres.Body.Close()
-	if err != nil {
-		return err
-	}
-	log.Println(string(hresBody))
 
 	if hres.StatusCode != http.StatusOK {
 		return errors.New("got unexpected response code from server")
@@ -165,7 +150,6 @@ func (c *Client) GetClipboard(deviceId string, pvk *ecdh.PrivateKey) (string, er
 	if err != nil {
 		return "", err
 	}
-	log.Println(string(hresBody))
 
 	if hres.StatusCode != http.StatusOK {
 		return "", errors.New("got unexpected response code from server")
@@ -213,7 +197,6 @@ func (c *Client) getDevices(deviceId string, pvk *ecdh.PrivateKey) ([]*api.Devic
 	if err != nil {
 		return nil, err
 	}
-	log.Println(string(hresBody))
 
 	if hres.StatusCode != http.StatusOK {
 		return nil, errors.New("got unexpected response code from server")
