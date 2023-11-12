@@ -65,7 +65,7 @@ func NewSharedKey(local *ecdh.PrivateKey, remote *ecdh.PublicKey, direction Dire
 }
 
 func PrivateKeyFromB64(encodedKey []byte) *ecdh.PrivateKey {
-	keyBytes := make([]byte, base64.StdEncoding.DecodedLen(len(encodedKey)))
+	keyBytes := make([]byte, KeySize)
 	_, err := base64.StdEncoding.Decode(keyBytes, encodedKey)
 	if err != nil {
 		panic(fmt.Errorf("could not decode base64 private key: %w", err))
@@ -74,7 +74,7 @@ func PrivateKeyFromB64(encodedKey []byte) *ecdh.PrivateKey {
 }
 
 func PublicKeyFromB64(encodedKey []byte) *ecdh.PublicKey {
-	keyBytes := make([]byte, base64.StdEncoding.DecodedLen(len(encodedKey)))
+	keyBytes := make([]byte, KeySize)
 	_, err := base64.StdEncoding.Decode(keyBytes, encodedKey)
 	if err != nil {
 		panic(fmt.Errorf("could not decode base64 public key: %w", err))
