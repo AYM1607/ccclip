@@ -55,20 +55,20 @@ func Write(c ConfigFile) error {
 
 func LoadPrivateKey() (*ecdh.PrivateKey, error) {
 	fp := path.Join(Path, PrivateKeyFileName)
-	return crypto.LoadPrivateKey(fp)
+	return crypto.LoadPrivateKeyFromFile(fp)
 }
 
 func LoadPublicKey() (*ecdh.PublicKey, error) {
 	fp := path.Join(Path, PublicKeyFileName)
-	return crypto.LoadPublicKey(fp)
+	return crypto.LoadPublicKeyFromFile(fp)
 }
 
 func SavePrivateKey(k *ecdh.PrivateKey) error {
 	fp := path.Join(Path, PrivateKeyFileName)
-	return crypto.SavePrivateKey(fp, k)
+	return crypto.SavePrivateKeyToFile(fp, k)
 }
 
 func SavePublicKey(k *ecdh.PublicKey) error {
 	fp := path.Join(Path, PublicKeyFileName)
-	return crypto.SavePublicKey(fp, k)
+	return crypto.SavePublicKeyToFile(fp, k)
 }

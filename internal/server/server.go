@@ -3,16 +3,16 @@ package server
 import (
 	"crypto/ecdh"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/AYM1607/ccclip/internal/config"
 	"github.com/AYM1607/ccclip/internal/db"
 	"github.com/AYM1607/ccclip/pkg/api"
-	"github.com/AYM1607/ccclip/pkg/crypto"
 )
 
 func New(addr string) *http.Server {
@@ -24,7 +24,10 @@ func New(addr string) *http.Server {
 	}
 }
 
-const minPasswordWork = 12
+const (
+	minPasswordWork = 12
+	dbLocationEnv   = "CCCLIP_DATABASE_LOCATION"
+)
 
 type controller struct {
 	store     db.DB
@@ -37,20 +40,16 @@ type controller struct {
 func newHttpHandler() http.Handler {
 	r := mux.NewRouter()
 
-	pbk, err := crypto.LoadPublicKey(config.Default.PublicKeyPath)
+	pvk, pbk, err := loadKeys()
 	if err != nil {
-		panic("could not load server's public key")
-	}
-	pvk, err := crypto.LoadPrivateKey(config.Default.PrivateKeyPath)
-	if err != nil {
-		panic("could not load server's private key")
+		panic(fmt.Errorf("could not load keys for the server: %w", err))
 	}
 
 	var store db.DB
-	if config.Default.DatabaseLocation == "" {
-		store = db.NewLocalDB()
+	if dbLocation := os.Getenv(dbLocationEnv); dbLocation != "" {
+		store = db.NewSQLiteDB(dbLocation)
 	} else {
-		store = db.NewSQLiteDB(config.Default.DatabaseLocation)
+		store = db.NewLocalDB()
 	}
 
 	c := &controller{

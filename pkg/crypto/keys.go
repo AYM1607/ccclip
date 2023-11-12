@@ -64,6 +64,24 @@ func NewSharedKey(local *ecdh.PrivateKey, remote *ecdh.PublicKey, direction Dire
 	return key
 }
 
+func PrivateKeyFromB64(encodedKey []byte) *ecdh.PrivateKey {
+	keyBytes := make([]byte, base64.StdEncoding.DecodedLen(len(encodedKey)))
+	_, err := base64.StdEncoding.Decode(keyBytes, encodedKey)
+	if err != nil {
+		panic(fmt.Errorf("could not decode base64 private key: %w", err))
+	}
+	return PrivateKeyFromBytes(keyBytes)
+}
+
+func PublicKeyFromB64(encodedKey []byte) *ecdh.PublicKey {
+	keyBytes := make([]byte, base64.StdEncoding.DecodedLen(len(encodedKey)))
+	_, err := base64.StdEncoding.Decode(keyBytes, encodedKey)
+	if err != nil {
+		panic(fmt.Errorf("could not decode base64 public key: %w", err))
+	}
+	return PublicKeyFromBytes(keyBytes)
+}
+
 func PrivateKeyFromBytes(keyBytes []byte) *ecdh.PrivateKey {
 	key, err := ecdh.X25519().NewPrivateKey(keyBytes)
 	if err != nil {
@@ -78,62 +96,4 @@ func PublicKeyFromBytes(keyBytes []byte) *ecdh.PublicKey {
 		panic(err)
 	}
 	return key
-}
-
-func LoadPrivateKey(fp string) (*ecdh.PrivateKey, error) {
-	var kb []byte
-	var err error
-	if os.Getenv("CCCLIP_LOAD_RAW_KEYS") == "" {
-		kb, err = loadKey(fp)
-	} else {
-		kb = make([]byte, KeySize)
-		base64.StdEncoding.Decode(kb, []byte(fp))
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	return PrivateKeyFromBytes(kb), nil
-}
-
-func LoadPublicKey(fp string) (*ecdh.PublicKey, error) {
-	var kb []byte
-	var err error
-	if os.Getenv("CCCLIP_LOAD_RAW_KEYS") == "" {
-		kb, err = loadKey(fp)
-	} else {
-		kb = make([]byte, KeySize)
-		base64.StdEncoding.Decode(kb, []byte(fp))
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	return PublicKeyFromBytes(kb), nil
-}
-
-func SavePrivateKey(fp string, k *ecdh.PrivateKey) error {
-	return saveKey(fp, k.Bytes(), privateKeyFileMode)
-}
-
-func SavePublicKey(fp string, k *ecdh.PublicKey) error {
-	return saveKey(fp, k.Bytes(), publicKeyFileMode)
-}
-
-func loadKey(fp string) ([]byte, error) {
-	b64Key, err := os.ReadFile(fp)
-	if err != nil {
-		return nil, err
-	}
-
-	keyBytes := make([]byte, KeySize)
-	base64.StdEncoding.Decode(keyBytes, b64Key)
-	return keyBytes, nil
-}
-
-func saveKey(fp string, key []byte, fm os.FileMode) error {
-	b64Key := make([]byte, base64.StdEncoding.EncodedLen(len(key)))
-	base64.StdEncoding.Encode(b64Key, key)
-
-	return os.WriteFile(fp, b64Key, fm)
 }

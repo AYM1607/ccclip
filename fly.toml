@@ -10,7 +10,6 @@ primary_region = "sea"
   dockerfile = "./cmd/server/Dockerfile"
 
 [env]
-  CCCLIP_LOAD_RAW_KEYS = "true"
   CCCLIP_PORT = "3000"
   CCCLIP_DATABASE_LOCATION = "/litefs/ccclip.db"
 
