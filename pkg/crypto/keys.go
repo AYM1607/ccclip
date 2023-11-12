@@ -80,7 +80,7 @@ func PublicKeyFromBytes(keyBytes []byte) *ecdh.PublicKey {
 	return key
 }
 
-func LoadPrivateKey(fp string) (*ecdh.PrivateKey, error) {
+func LoadPrivateKeyFromFile(fp string) (*ecdh.PrivateKey, error) {
 	var kb []byte
 	var err error
 	if os.Getenv("CCCLIP_LOAD_RAW_KEYS") == "" {
@@ -96,7 +96,7 @@ func LoadPrivateKey(fp string) (*ecdh.PrivateKey, error) {
 	return PrivateKeyFromBytes(kb), nil
 }
 
-func LoadPublicKey(fp string) (*ecdh.PublicKey, error) {
+func LoadPublicKeyFromFile(fp string) (*ecdh.PublicKey, error) {
 	var kb []byte
 	var err error
 	if os.Getenv("CCCLIP_LOAD_RAW_KEYS") == "" {
@@ -112,11 +112,11 @@ func LoadPublicKey(fp string) (*ecdh.PublicKey, error) {
 	return PublicKeyFromBytes(kb), nil
 }
 
-func SavePrivateKey(fp string, k *ecdh.PrivateKey) error {
+func SavePrivateKeyToFile(fp string, k *ecdh.PrivateKey) error {
 	return saveKey(fp, k.Bytes(), privateKeyFileMode)
 }
 
-func SavePublicKey(fp string, k *ecdh.PublicKey) error {
+func SavePublicKeyToFile(fp string, k *ecdh.PublicKey) error {
 	return saveKey(fp, k.Bytes(), publicKeyFileMode)
 }
 

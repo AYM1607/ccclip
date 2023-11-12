@@ -37,11 +37,11 @@ type controller struct {
 func newHttpHandler() http.Handler {
 	r := mux.NewRouter()
 
-	pbk, err := crypto.LoadPublicKey(config.Default.PublicKeyPath)
+	pbk, err := crypto.LoadPublicKeyFromFile(config.Default.PublicKeyPath)
 	if err != nil {
 		panic("could not load server's public key")
 	}
-	pvk, err := crypto.LoadPrivateKey(config.Default.PrivateKeyPath)
+	pvk, err := crypto.LoadPrivateKeyFromFile(config.Default.PrivateKeyPath)
 	if err != nil {
 		panic("could not load server's private key")
 	}
