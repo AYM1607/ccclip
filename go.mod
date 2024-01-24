@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/gorilla/mux v1.8.0
 	github.com/mattn/go-isatty v0.0.20
-	github.com/mattn/go-sqlite3 v1.14.18
+	github.com/mattn/go-sqlite3 v1.14.19
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/spf13/cobra v1.8.0
 	golang.org/x/crypto v0.14.0
